@@ -40,9 +40,23 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # 坑：这个 action 的 packages 默认值是 'tools platform-tools'，
+          # 而 Google 早已把旧的 "tools" 包从 SDK 仓库下架。
+          # sdkmanager 会说 "Failed to find package 'tools'" 并以退出码 1 结束，
+          # 整个 action 直接抛错、后续步骤全不执行。所以必须显式覆盖这个默认值。
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
 
       - name: Accept SDK licenses
         run: yes | sdkmanager --licenses > /dev/null 2>&1 || true
+
+      - name: Show toolchain versions
+        run: |
+          java -version
+          node -v
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-unset}"
+          echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+          sdkmanager --list_installed || true
 
       - name: Install dependencies
         working-directory: mobile
@@ -64,7 +78,7 @@ jobs:
         working-directory: mobile/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

@@ -1,0 +1,13 @@
+{
+  "appId": "cn.sanguozhi.enterchronicle",
+  "appName": "三国志·入世录",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

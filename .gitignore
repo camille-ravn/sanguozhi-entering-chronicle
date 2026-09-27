@@ -1,0 +1,19 @@
+# —— 内部工作区 / 平台文件（不上传） ——
+.workbuddy/
+.wbapp_*
+
+# —— 抓取缓存（约 10 MB，可由 _build/*.py 重建） ——
+_build/_cache_wl/
+_build/*.txt
+
+# —— 打包产物 ——
+outputs/
+
+# —— 依赖 ——
+node_modules/
+
+# —— 系统垃圾 ——
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log

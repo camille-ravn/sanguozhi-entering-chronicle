@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="《三国志》史实人物关系与 AI 文字冒险互动网页">
+  <title>三国志·入世录</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <header class="site-header">
+    <div class="brand-block" aria-label="三国志入世录">
+      <span class="brand-seal">志</span>
+      <div>
+        <p class="eyebrow">RECORDS OF THE THREE KINGDOMS</p>
+        <h1>三国志·入世录</h1>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="status-stamp" id="aiStatus">史笔模式</span>
+      <button class="brutal-button small" id="openAbout" type="button">资料说明</button>
+    </div>
+  </header>
+
+  <nav class="tab-bar" aria-label="主要功能">
+    <button class="tab-button active" data-tab="atlas" type="button"><b>01</b> 全书底座</button>
+    <button class="tab-button" data-tab="network" type="button"><b>02</b> 人物关系</button>
+    <button class="tab-button" data-tab="reading" type="button"><b>03</b> 原典阅读</button>
+    <button class="tab-button" data-tab="adventure" type="button"><b>04</b> 入世冒险</button>
+  </nav>
+
+  <main id="main">
+    <section class="tab-panel active" id="atlasPanel" data-panel="atlas" aria-labelledby="atlasTitle">
+      <div class="hero-grid">
+        <article class="hero-copy brutal-card yellow-card">
+          <p class="kicker">纪传为骨 · 人物为脉 · 选择为刃</p>
+          <h2 id="atlasTitle">翻开六十五卷，<br>走进一张活的关系网。</h2>
+          <p class="hero-intro">以陈寿《三国志》与裴松之注为史料锚点。查人物、看联盟裂变，也可以带着你的原创角色进入汉末。</p>
+          <div class="hero-buttons">
+            <button class="brutal-button ink" data-jump="network" type="button">打开关系网 →</button>
+            <button class="brutal-button" data-jump="adventure" type="button">建立我的 OC</button>
+          </div>
+        </article>
+
+        <aside class="stats-stack" aria-label="资料统计">
+          <div class="stat-card red-card"><strong id="volumeCount">65</strong><span>卷史料目录</span></div>
+          <div class="stat-card blue-card"><strong id="personCount">0</strong><span>核心人物卡</span></div>
+          <div class="stat-card green-card"><strong id="relationCount">0</strong><span>复合关系</span></div>
+          <div class="stat-card cream-card"><strong id="eventCount">0</strong><span>多人事件组</span></div>
+        </aside>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">CORPUS MAP</p>
+          <h2>全书结构</h2>
+        </div>
+        <div class="corpus-tools">
+          <label class="search-box">
+            <span>检索卷目</span>
+            <input id="volumeSearch" type="search" placeholder="如：诸葛亮、魏书、卷五十四">
+          </label>
+          <div class="segmented" role="group" aria-label="筛选书部">
+            <button class="segment active" data-division="全部" type="button">全部</button>
+            <button class="segment" data-division="魏书" type="button">魏书</button>
+            <button class="segment" data-division="蜀书" type="button">蜀书</button>
+            <button class="segment" data-division="吴书" type="button">吴书</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="source-note brutal-card">
+        <span class="source-note-mark">※</span>
+        <div>
+          <strong>版本与译文说明</strong>
+          <p>原文目录按《三国志》六十五卷组织，可跳转维基文库公开领域文本。人物卡中的现代汉语内容由本站独立整理，用来概括传记要点。</p>
+        </div>
+      </div>
+
+      <div class="volume-grid" id="volumeGrid" aria-live="polite"></div>
+    </section>
+
+    <section class="tab-panel" id="networkPanel" data-panel="network" aria-labelledby="networkTitle" hidden>
+      <div class="section-heading network-heading">
+        <div>
+          <p class="eyebrow">RELATION GRAPH</p>
+          <h2 id="networkTitle">人际与局势</h2>
+          <p class="section-deck">拖动人物，滚轮缩放。点人物看传记卡，点事件组高亮多人关系。</p>
+        </div>
+        <div class="network-actions">
+          <select class="brutal-select" id="scopeFilter" aria-label="显示范围"><option value="core">核心层</option><option value="all">全部人物</option></select>
+          <button class="brutal-button small" id="relayout" type="button">重排布局</button>
+          <button class="brutal-button small" id="resetView" type="button">复位视图</button>
+          <button class="brutal-button small" id="clearHighlight" type="button">清除高亮</button>
+        </div>
+      </div>
+
+      <div class="network-layout">
+        <aside class="network-sidebar brutal-card">
+          <label class="search-box compact">
+            <span>找人物</span>
+            <input id="personSearch" type="search" placeholder="姓名 / 字 / 标签">
+          </label>
+
+          <fieldset class="filter-block">
+            <legend>阵营</legend>
+            <label><input type="checkbox" name="faction" value="魏" checked><span class="swatch wei"></span>魏</label>
+            <label><input type="checkbox" name="faction" value="蜀" checked><span class="swatch shu"></span>蜀</label>
+            <label><input type="checkbox" name="faction" value="吴" checked><span class="swatch wu"></span>吴</label>
+            <label><input type="checkbox" name="faction" value="群雄" checked><span class="swatch other"></span>群雄 / 汉</label>
+          </fieldset>
+
+          <label class="select-box">
+            <span>关系类型</span>
+            <select id="relationFilter">
+              <option value="全部">全部关系</option>
+              <option value="君臣">君臣</option>
+              <option value="亲族">亲族</option>
+              <option value="盟友">盟友</option>
+              <option value="敌对">敌对</option>
+              <option value="同僚">同僚</option>
+              <option value="知遇">知遇</option>
+              <option value="传承">传承</option>
+              <option value="分歧">分歧</option>
+            </select>
+          </label>
+
+          <div class="legend-block">
+            <strong>读图</strong>
+            <p><span class="line-sample solid"></span>稳定 / 同阵营关系</p>
+            <p><span class="line-sample dash"></span>冲突 / 破裂关系</p>
+            <p><span class="line-sample double"></span>一对人物有多重关系</p>
+            <p class="legend-count" id="graphCount"></p>
+          </div>
+        </aside>
+
+        <div class="network-stage brutal-card" id="networkStage">
+          <svg id="networkSvg" viewBox="0 0 1000 620" role="img" aria-label="三国志核心人物关系网络">
+            <defs>
+              <filter id="hardShadow" x="-20%" y="-20%" width="150%" height="150%">
+                <feDropShadow dx="4" dy="4" stdDeviation="0" flood-color="#111111" flood-opacity="1"/>
+              </filter>
+              <marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+                <polygon points="0 0, 7 3.5, 0 7" fill="#111111"></polygon>
+              </marker>
+            </defs>
+            <g id="networkViewport">
+              <g id="bandLayer"></g>
+              <g id="edgeLayer"></g>
+              <g id="nodeLayer"></g>
+            </g>
+          </svg>
+          <div class="graph-empty" id="graphEmpty" hidden>没有符合条件的人物。</div>
+          <div class="graph-tip">拖拽空白移动 · 滚轮缩放 · 拖拽节点改位置</div>
+        </div>
+      </div>
+
+      <div class="event-strip-wrap">
+        <div class="section-heading compact-heading">
+          <div><p class="eyebrow">MULTI-PERSON TIES</p><h3>多人关系组</h3></div>
+        </div>
+        <div class="event-strip" id="eventStrip"></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="readingPanel" data-panel="reading" aria-labelledby="readingTitle" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ORIGINAL TEXT RUNNER</p>
+          <h2 id="readingTitle">原典阅读</h2>
+          <p class="section-deck">把《三国志》正文铺成一条路。正文的每一个字就是脚下的路面，句读标点是路上的坎；走到最后一个字，这一传就读完了。</p>
+        </div>
+        <div class="reading-head-actions">
+          <button class="brutal-button small" id="readingReroll" type="button">换个排版</button>
+          <button class="brutal-button small" id="readingRestart" type="button">回到起点</button>
+        </div>
+      </div>
+
+      <div class="reading-layout">
+        <aside class="reading-index brutal-card" aria-label="篇目选择">
+          <div class="panel-title"><span>目</span><h3>分章篇目</h3></div>
+          <p class="save-hint">全卷合传按「一人一传」拆分，同卷人物可单独起读。</p>
+          <div class="chapter-list" id="chapterList"></div>
+        </aside>
+
+        <section class="reading-console brutal-card" aria-label="原典横版阅读">
+          <header class="console-header reading-header">
+            <div class="reading-ident">
+              <span class="reading-division" id="readingDivision">吴</span>
+              <strong id="readingChapterTitle">周瑜传</strong>
+              <span class="reading-volume" id="readingVolumeLabel"></span>
+            </div>
+            <div class="reading-tools">
+              <label class="reading-auto"><input type="checkbox" id="readingAuto"> 自动漫步</label>
+              <span class="reading-seed" id="readingSeed"></span>
+              <span class="reading-chars" id="readingChars"></span>
+            </div>
+          </header>
+
+          <div class="reading-stage" id="readingStage">
+            <canvas id="readingCanvas" tabindex="0" aria-label="原典横版跳跃。左右方向键移动，空格或向上键跳跃，可以二段跳，P 暂停。"></canvas>
+            <div class="reading-hud">
+              <span class="reading-status" id="readingStatus"></span>
+              <span class="reading-hint" id="readingHint"></span>
+            </div>
+            <div class="reading-overlay" id="readingOverlay" hidden>
+              <div class="reading-overlay-card" role="dialog" aria-modal="true" aria-labelledby="readingOverlayTitle">
+                <span class="overlay-symbol" id="readingOverlaySymbol">，</span>
+                <p class="eyebrow" id="readingOverlayEyebrow">A LITTLE PAUSE</p>
+                <h3 id="readingOverlayTitle">已停止</h3>
+                <p id="readingOverlayText">碰到标点。复活后有 3 秒保护。</p>
+                <button class="brutal-button ink" id="readingOverlayAction" type="button">继续阅读</button>
+                <button class="text-button" id="readingOverlaySecondary" type="button">换一篇</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="reading-track" aria-label="阅读进度"><div id="readingFill"></div></div>
+
+          <div class="reading-bottom">
+            <div class="keyboard-hints">
+              <span><kbd>←</kbd><kbd>→</kbd> 移动</span>
+              <span><kbd class="space-key">SPACE</kbd> 跳跃 / 二段跳</span>
+              <span><kbd>P</kbd> 暂停</span>
+            </div>
+            <div class="reading-actions">
+              <span class="progress-label" id="readingProgress">0 <span>/ 0 字</span></span>
+              <button class="brutal-button small" id="readingPause" type="button">暂停</button>
+            </div>
+          </div>
+
+          <div class="touch-controls reading-touch" id="readingTouch">
+            <button data-reading="left" type="button" aria-label="向左移动">←</button>
+            <button data-reading="right" type="button" aria-label="向右移动">→</button>
+            <button data-reading="jump" class="touch-jump" type="button" aria-label="跳跃">跳跃 ↑</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="source-note brutal-card reading-note">
+        <span class="source-note-mark">※</span>
+        <div>
+          <strong>排版规则与分章说明</strong>
+          <p>正文取陈寿《三国志》白文，只保留「原文」正文，不含裴松之注、注音释义与校勘异文（编者订字已并入正文），逐字未改。分章依「一人一传」划分：卷十「荀彧荀攸贾诩传」拆为三篇，卷五四「周瑜鲁肃吕蒙传」拆为三篇，卷三六、卷五八等合传同理，共二十二篇。<b>收录口径：吴书按主要人物收齐（三孙、太史慈、周瑜、鲁肃、吕蒙、陆逊、张昭、甘宁、陆抗、诸葛恪，十二篇）；魏书、蜀书只取若干名篇，属节选。</b></p>
+          <p><b>关卡只有一条规则：</b>把一传正文按句读断成句，每句铺成一段路面；段的高度是随机游走的坡度，段的间距随坡度自动收窄，保证每一跳都够得着。段内的标点按类别变成物件——<b>，、</b>是黑色矮桩，<b>侧面拦住去路，跳过去才能继续</b>（桩顶能踩）；<b>。；：</b>与<b>！</b>是红色墩子，<b>侧面同样只是拦路，但顶面有毒，落到顶上才算中断阅读</b>；<b>？</b>是弹板；<b>“”《》</b>会在上方浮出一块可踩的悬砖。约八分之一的段上方浮一枚「印」，收满一篇里全部「印」会有个小彩蛋；每三十二段有一块无标点的宽台「歇脚石」；红墩的判定盒随已读比例变宽，越往后越紧。</p>
+          <p>规则里随机的部分全部由「排版号」决定，所以同一篇文本每次进入、或点<b>换个排版</b>（快捷键 <kbd>R</kbd>），都会得到一套不同的地形，走法不重样。操作：<kbd>←</kbd><kbd>→</kbd> 移动，<kbd>空格</kbd> 或 <kbd>↑</kbd> 跳跃（空中可再跳一次），<kbd>P</kbd> 或 <kbd>Esc</kbd> 暂停。<b>自动漫步</b>打开后人物只管自己往前走，画框也会按固定速度往右推——停久了会被甩出画框而中断，所以跳要跟上。掉出路面或落到红墩顶上后，可在附近路面复活并获 3 秒保护，次数不限。整个关卡完全在本地排版，不联网、不上传。</p>
+        </div>
+      </div>
+
+      <dialog class="egg-dialog" id="readingEgg">
+        <button class="dialog-close" id="eggClose" type="button" aria-label="关闭">×</button>
+        <div class="egg-inner">
+          <p class="eyebrow">ALL SEALS COLLECTED</p>
+          <div class="egg-seal">印</div>
+          <h2>恭喜你可以撑地了！</h2>
+          <p>这一传里的 <b id="eggCount">0</b> 枚文脉印一枚没漏，全数收齐。</p>
+          <div class="egg-actions">
+            <button class="brutal-button ink" id="eggAgain" type="button">换个排版再走一遍</button>
+            <button class="brutal-button" id="eggStay" type="button">先收着</button>
+          </div>
+        </div>
+      </dialog>
+    </section>
+
+    <section class="tab-panel" id="adventurePanel" data-panel="adventure" aria-labelledby="adventureTitle" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">AI ROLEPLAY</p>
+          <h2 id="adventureTitle">让你的 OC 入世</h2>
+          <p class="section-deck">史实大势固定，人物选择与局部命运向你开放。每回合附史料锚点。</p>
+        </div>
+        <button class="brutal-button small danger" id="newGame" type="button">重开一局</button>
+      </div>
+
+      <div class="adventure-layout">
+        <aside class="oc-sheet brutal-card" id="ocSheet">
+          <div class="panel-title"><span>甲</span><h3>立身帖</h3></div>
+          <form id="ocForm">
+            <label>姓名<input name="name" maxlength="12" required placeholder="如：谢溟"></label>
+            <label>自称 / 代词
+              <select name="pronoun"><option>她</option><option>他</option><option>其人</option></select>
+            </label>
+            <label>出身
+              <select name="origin">
+                <option>颍川寒门</option><option>关中流民</option><option>江东士族</option>
+                <option>巴蜀商旅</option><option>辽东部族</option><option>洛阳太学生</option>
+              </select>
+            </label>
+            <label>专长
+              <select name="talent">
+                <option>识人</option><option>筹粮</option><option>医术</option><option>骑射</option>
+                <option>辩论</option><option>谍报</option><option>律令</option>
+              </select>
+            </label>
+            <label>入世时点
+              <select name="era">
+                <option value="184">184 · 黄巾风起</option>
+                <option value="190">190 · 关东举兵</option>
+                <option value="200">200 · 官渡对峙</option>
+                <option value="208">208 · 荆州与赤壁</option>
+                <option value="219">219 · 汉中与荆州</option>
+                <option value="228">228 · 第一次北伐</option>
+              </select>
+            </label>
+            <label>行事底色<textarea name="motive" maxlength="120" rows="3" placeholder="我想保全一座小城，也想知道乱世里什么值得相信。"></textarea></label>
+            <button class="brutal-button ink wide" type="submit">落笔开局</button>
+          </form>
+
+          <div class="character-status" id="characterStatus" hidden>
+            <div class="status-name"><span id="statusName"></span><small id="statusMeta"></small></div>
+            <div class="meter-row"><span>见识</span><progress id="statInsight" max="100" value="35"></progress><b id="statInsightValue">35</b></div>
+            <div class="meter-row"><span>声望</span><progress id="statFame" max="100" value="20"></progress><b id="statFameValue">20</b></div>
+            <div class="meter-row"><span>军略</span><progress id="statStrategy" max="100" value="20"></progress><b id="statStrategyValue">20</b></div>
+            <div class="meter-row"><span>仁心</span><progress id="statMercy" max="100" value="45"></progress><b id="statMercyValue">45</b></div>
+          </div>
+
+          <div class="save-block" id="saveBlock">
+            <div class="panel-title"><span>乙</span><h3>存档</h3></div>
+            <p class="save-hint">每回合自动存。刷新不丢，可另起一局。</p>
+            <div class="save-list" id="saveList"></div>
+            <div class="save-actions">
+              <button class="brutal-button small" id="exportLog" type="button">导出本局</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="story-console brutal-card" aria-label="文字冒险">
+          <header class="console-header">
+            <div>
+              <span class="live-dot" id="liveDot"></span>
+              <strong id="storyMode">等待建档</strong>
+            </div>
+            <label class="model-picker" id="modelPicker" hidden>执笔模型<select id="modelSelect"></select></label>
+            <button class="text-button" id="openByok" type="button">接入自有 API</button>
+            <button class="text-button" id="stopGeneration" type="button" hidden>停笔</button>
+          </header>
+          <div class="story-log" id="storyLog" aria-live="polite">
+            <article class="narrator-message intro-message">
+              <span class="message-label">史官</span>
+              <p>山河尚未定名。先在左侧写下你的来处，我会把你放进那一年真实的风里。</p>
+            </article>
+          </div>
+          <div class="choice-row" id="choiceRow" aria-label="行动选项"></div>
+          <div class="retry-row" id="retryRow"></div>
+          <form class="command-bar" id="commandForm">
+            <label class="sr-only" for="commandInput">输入你的行动</label>
+            <textarea id="commandInput" rows="2" maxlength="600" placeholder="输入行动、对白或调查方向……" disabled></textarea>
+            <button class="brutal-button red" id="sendCommand" type="submit" disabled>行动</button>
+          </form>
+          <p class="console-note">AI 会依据人物卡与史料锚点续写；输出可能出错，请以原典为准。配额或网络不可用时，可切换到明确标注的本地“史笔回退”。</p>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div><b>《三国志·入世录》</b><span>史实关系探索原型</span></div>
+    <p>原典：陈寿《三国志》、裴松之注。参考入口：<a href="https://www.shidianguji.com/book/LS0004/chapter/1j7fn785i0bi2_1?page_from=searching_page&version=123" target="_blank" rel="noreferrer">识典古籍</a> · <a href="https://zh.wikisource.org/zh-hans/%E4%B8%89%E5%9C%8B%E5%BF%97" target="_blank" rel="noreferrer">维基文库</a></p>
+  </footer>
+
+  <dialog class="wiki-dialog" id="personDialog">
+    <button class="dialog-close" id="closePerson" type="button" aria-label="关闭">×</button>
+    <div id="personCard"></div>
+  </dialog>
+
+  <dialog class="about-dialog" id="aboutDialog">
+    <button class="dialog-close" id="closeAbout" type="button" aria-label="关闭">×</button>
+    <p class="eyebrow">SOURCE & METHOD</p>
+    <h2>资料说明</h2>
+    <div class="about-grid">
+      <section><b>原典底座</b><p>全书目录按魏书三十卷、蜀书十五卷、吴书二十卷组织。卷目链接指向公开领域文本，便于复核。</p></section>
+      <section><b>现代释义</b><p>人物卡和关系说明均为独立撰写的概括，不整段转载第三方现代译文。</p></section>
+      <section><b>史实边界</b><p>关系标签区分君臣、亲族、联盟、敌对与阶段性分歧；冒险不会把《三国演义》情节当作史书事实。</p></section>
+      <section><b>视觉素材</b><p>页面只使用文字、CSS 几何块与 SVG 关系线，没有生成或调用 AI 绘图。</p></section>
+    </div>
+  </dialog>
+
+  <dialog class="byok-dialog" id="byokDialog">
+    <button class="dialog-close" id="byokClose" type="button" aria-label="关闭">×</button>
+    <div class="byok-inner">
+      <p class="eyebrow">BRING YOUR OWN KEY</p>
+      <h2>接入自有 API</h2>
+      <p class="byok-lead">填你自己的 OpenAI 兼容接口，即可获得完整 AI 旁白，不再降级为本地史笔。Key 仅存于本机浏览器，别用付费工作账号。</p>
+      <form id="byokForm">
+        <label class="byok-enable"><input type="checkbox" id="byokEnabled"> 启用自带 API</label>
+        <label>接口地址（Base URL）<input id="byokBase" placeholder="https://api.deepseek.com 或 http://localhost:1234/v1"></label>
+        <label>API Key<input id="byokKey" type="password" placeholder="sk-..." autocomplete="off"></label>
+        <label>模型名<input id="byokModel" placeholder="deepseek-chat"></label>
+        <p class="byok-hint">推荐 OpenRouter（openrouter.ai/api/v1）或本地 LM Studio / Ollama；部分厂商（如原生 OpenAI）默认不允许浏览器跨域直连。</p>
+        <div class="byok-actions">
+          <button class="brutal-button ink" type="submit">保存</button>
+          <button class="brutal-button" type="button" id="byokCancel">取消</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <template id="toastTemplate"><div class="toast" role="status"></div></template>
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@0.1.2-dev.1b37f73.202609222026/lib/index.global.js"></script>
+  <script src="./cloud-config.js"></script>
+  <script src="./data.js"></script>
+  <script src="./wiki-bios.js"></script>
+  <script src="./reading-texts.js"></script>
+  <script src="./app.js"></script>
+  <script src="./reading.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "sanguozhi-chronicle-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "《三国志·入世录》移动端封装（Capacitor；启用 CapacitorHttp 以原生网络绕过浏览器 CORS）",
+  "scripts": {
+    "sync:web": "node scripts/sync-web.mjs",
+    "android:add": "npm run sync:web && npx cap add android",
+    "ios:add": "npm run sync:web && npx cap add ios",
+    "sync": "npm run sync:web && npx cap sync",
+    "android:open": "npm run sync && npx cap open android",
+    "android:run": "npm run sync && npx cap run android",
+    "ios:open": "npm run sync && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

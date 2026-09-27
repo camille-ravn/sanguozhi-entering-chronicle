@@ -30,4 +30,11 @@ if (existsSync(dest)) rmSync(dest, { recursive: true, force: true });
 mkdirSync(dest, { recursive: true });
 for (const f of FILES) copyFileSync(join(root, f), join(dest, f));
 
+// 本机私有的云端配置：有就一起打进去，没有就跳过（发布版本本来就没有）
+const localConfig = "cloud-config.local.js";
+if (existsSync(join(root, localConfig))) {
+  copyFileSync(join(root, localConfig), join(dest, localConfig));
+  console.log(`  + ${localConfig}（本机私有配置，含云端 key）`);
+}
+
 console.log(`已同步 ${FILES.length} 个文件 → ${dest}`);

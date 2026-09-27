@@ -65,6 +65,21 @@ jobs:
         working-directory: mobile
         run: npm install
 
+      - name: Inject cloud key (optional)
+        # 仓库里的 cloud-config.js 是「对外发布版」，publishableKey 故意留空。
+        # 想让打出来的 APK 保留云端通道，就到
+        # Settings → Secrets and variables → Actions 建一个 WB_PUBLIC_KEY。
+        # 不配也能正常构建，只是 APK 里没有云端 key（走自带 API 或史笔回退）。
+        env:
+          WB_PUBLIC_KEY: ${{ secrets.WB_PUBLIC_KEY }}
+        run: |
+          if [ -n "$WB_PUBLIC_KEY" ]; then
+            printf 'window.__WB_LOCAL_CONFIG__ = { publishableKey: "%s" };\n' "$WB_PUBLIC_KEY" > cloud-config.local.js
+            echo "已从 Secret WB_PUBLIC_KEY 注入云端配置"
+          else
+            echo "未配置 Secret WB_PUBLIC_KEY：APK 不含云端 key，将走自带 API 或史笔回退"
+          fi
+
       - name: Sync web assets into www
         working-directory: mobile
         run: npm run sync:web

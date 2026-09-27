@@ -559,9 +559,13 @@
     }
     state.byok = null;
     // 2) 否则尝试默认 WorkBuddy Cloud 通道
+    //    先等配置就绪：cloud-config.js 会异步探测本机私有的 cloud-config.local.js
+    //    （发布版本里没有这个文件，key 为空 -> 下面直接判失败落到史笔回退）
     try {
+      if (window.__WB_CONFIG_READY__) await window.__WB_CONFIG_READY__;
       if (!window.WorkBuddyCloud || !window.__WB_PUBLIC_CONFIG__) throw new Error("SDK unavailable");
       const config = window.__WB_PUBLIC_CONFIG__;
+      if (!config.publishableKey) throw new Error("cloud publishableKey not configured");
       state.cloud = window.WorkBuddyCloud.createWorkBuddyCloud({
         endpoint: config.endpoint,
         publishableKey: config.publishableKey
@@ -597,10 +601,17 @@
     } catch (error) {
       state.aiMode = "fallback";
       state.aiReady = false;
-      status.textContent = "史笔回退";
+      // 区分两种回退：本页压根没内置云端通道（发布版本），还是内置了但握手失败
+      const keyless = !(window.__WB_PUBLIC_CONFIG__ && window.__WB_PUBLIC_CONFIG__.publishableKey);
+      status.textContent = keyless ? "未内置模型" : "史笔回退";
       status.style.background = "#d9b07c";
-      storyMode.textContent = "本地史笔回退";
+      storyMode.textContent = keyless ? "史笔回退 · 可自带 API" : "本地史笔回退";
       $("#modelPicker").hidden = true;
+      // 首次访问提示一次，别每次都弹
+      if (keyless && !localStorage.getItem("sgz.byokHintShown")) {
+        localStorage.setItem("sgz.byokHintShown", "1");
+        showToast("本页未内置 AI 接口。到「板块 04 → 接入自有 API」填自己的 Key，即可获得完整 AI 体验。");
+      }
     }
   }
 

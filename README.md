@@ -41,9 +41,21 @@ AI 旁白是**可选增强**。页面有三级通道，打开时自动选择：
 - 推荐 **OpenRouter**，或本地 **LM Studio / Ollama**（如 `http://localhost:1234/v1`）。部分厂商（例如原生 OpenAI）默认不允许浏览器跨域直连，会提示「无法连接」。
 - ⚠️ key 存在浏览器里等同于明文。请**不要填付费工作账号的 key**。
 
-### 2. 默认云端通道
+### 2. 默认云端通道（**本仓库里已按「对外发布」置空**）
 
-不填自带 key 时，会尝试项目作者部署的 WorkBuddy Cloud 服务。该服务按**来源域名**校验：**只有原部署域名可用**；fork 到别的域名或本地打开时会自动失效。
+不填自带 key 时，页面本会尝试走项目作者部署的 WorkBuddy Cloud 服务。但那个通道的 `publishableKey` 指向作者自己的账号，**任何人用它都会消耗作者的额度**——所以仓库里的 [`cloud-config.js`](./cloud-config.js) 把 key **故意留空**了。
+
+因此别人 clone 下来打开，得到的是「史笔回退」；想要完整 AI，走上面的自带 API 那条路。
+
+作者自己那份怎么保留云端？在本目录放一个 `cloud-config.local.js`（**已 gitignore，不会进仓库**）：
+
+```js
+window.__WB_LOCAL_CONFIG__ = { publishableKey: "wbpk_..." };
+```
+
+`cloud-config.js` 会自动探测并加载它；文件不存在就静默跳过。云端编译 APK 时读不到本机文件，改为从仓库 Secret `WB_PUBLIC_KEY` 注入（见 `mobile/README.md`）。
+
+> 补充：该云端服务除了认 key，还按**来源域名**校验。实测白名单包含服务自身域名与 `localhost` 系列（含 Capacitor 的 `https://localhost`），**GitHub Pages 这类外域会被 403 拒绝**。另外不带 `Origin` 头的裸请求不在拦截范围内，所以「key 留在前端」这件事本身只适合当作软性限制，别当硬防线。
 
 ### 3. 本地「史笔回退」
 
@@ -66,7 +78,8 @@ npm run android:open   # 打开 Android Studio，Run ▶
 - 关键点：启用了 **`CapacitorHttp`**，页面里的 `fetch` 走**原生网络**——**第三方接口的 CORS 从此无关紧要**，这正是「自带 API 直连」在手机上能通的原因。
 - 代价：原生网络**整段缓冲**，不再逐字出现（文字一次性显示）；「停笔」可能不生效。代码已做兼容。
 - **不想在本机装工具链？** 仓库自带 GitHub Actions（`.github/workflows/android.yml`）：推到 GitHub 后，进 **Actions → Build Android APK → Run workflow**，云端会自动编译，跑完在该次运行的 **Artifacts** 里下载 `app-debug.apk`（手机开启「未知来源」即可装）。
-- 本机构建需要 **JDK 17 + Android Studio**；iOS 需 macOS + Xcode。细节与坑见 [`mobile/README.md`](./mobile/README.md)。
+- **想让云端编出来的 APK 也带云端通道**：到仓库 **Settings → Secrets and variables → Actions** 建一个名为 `WB_PUBLIC_KEY` 的 Secret，值是那个 `wbpk_...`。构建时会自动写成 `cloud-config.local.js`。不配也能正常出包，只是 APK 里没有 key。
+- 本机构建需要 **JDK 21 + Node 22+ + Android Studio**；iOS 需 macOS + Xcode。细节与坑见 [`mobile/README.md`](./mobile/README.md)。
 
 ## 目录结构
 
@@ -78,8 +91,12 @@ data.js             人物 / 关系 / 事件 / 卷目数据
 wiki-bios.js        人物资料卡数据
 reading.js          板块 03 横版跳跃引擎
 reading-texts.js    板块 03 正文（22 篇）
-cloud-config.js     默认云端通道配置（可公开字段）
+cloud-config.js     云端通道配置（对外发布版，key 留空）
+cloud-config.local.js  本机私有覆盖，含真实 key（可选，已 gitignore）
 ```
+
+> **三级通道的优先级**：自带 API（`localStorage`）> 云端（有 key 才启用）> 史笔回退。
+> `cloud-config.js` 会异步探测 `cloud-config.local.js`，`app.js` 在握手前 await 这个探测，所以没有竞态。
 
 > 板块 03 的地形由种子随机生成，每次打开或点「换个排版」都是新布局；种子存 `localStorage` 键 `sgz.reading.seed`。
 

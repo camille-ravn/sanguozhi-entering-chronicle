@@ -16,6 +16,18 @@
 
 > 产出的是 **debug APK**，适合自己测试和分享；要上架应用商店需另配 release 签名（keystore）。
 
+### 云端编出来的 APK 要不要带云端 AI 通道？
+
+仓库根的 `cloud-config.js` 是**对外发布版**（`publishableKey` 留空），所以 CI 打出来的 APK 默认**不带**云端通道，使用者得自己填 API key（走 `CapacitorHttp` 原生直连）或落到史笔回退。
+
+如果你想让**自己**这份 APK 保留云端通道：
+
+1. 仓库 **Settings → Secrets and variables → Actions → New repository secret**
+2. Name 填 `WB_PUBLIC_KEY`，Value 填那个 `wbpk_...`
+3. 重新跑一次 workflow
+
+工作流里有一步 `Inject cloud key (optional)` 会把它写成 `cloud-config.local.js`（该文件已 gitignore，不会入库）。不配这个 Secret 也能正常构建。
+
 ## 前置依赖（本地构建才需要）
 
 | 目标 | 需要 |

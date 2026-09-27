@@ -1,3 +1,6 @@
+# —— 本机私有配置（含云端 publishableKey，绝不入库） ——
+cloud-config.local.js
+
 # —— 内部工作区 / 平台文件（不上传） ——
 .workbuddy/
 .wbapp_*

@@ -20,9 +20,15 @@
 
 | 目标 | 需要 |
 | --- | --- |
-| 通用 | Node.js 18+ |
-| Android | **JDK 17** + **Android Studio**（含 Android SDK）；或只装 SDK + 命令行工具 |
+| 通用 | **Node.js 22+**（`@capacitor/cli` 8.x 的 `engines.node` 就是 `>=22.0.0`） |
+| Android | **JDK 21** + **Android Studio**（含 Android SDK）；或只装 SDK + 命令行工具 |
 | iOS | macOS + Xcode（Windows 上无法构建 iOS） |
+
+> **JDK 必须是 21，不能是 17。** `@capacitor/android` 8.x 的 `capacitor/build.gradle` 里写死了
+> `sourceCompatibility/targetCompatibility = JavaVersion.VERSION_21`，用 JDK 17 编译会直接报
+> `error: invalid source release: 21`。
+>
+> 另外 Android SDK 侧要装 **`platforms;android-36`**（`compileSdk 36`）与 Build-Tools **36.0.0**。
 
 ## 构建步骤
 
@@ -56,6 +62,10 @@ npm run android:run        # 命令行直接装到已连接的设备/模拟器
 4. **CORS 在这里不是问题**——正因为走了原生网络。这也是把页面包成 App 的主要动机。
 5. **图标 / 启动图**：用 `npx @capacitor/assets generate` 从一张 1024×1024 图生成，或手动替换 `android/app/src/main/res/` 下的资源。
 6. **应用名 / 包名**：改 `capacitor.config.json` 里的 `appName` 与 `appId`（`appId` 用反向域名，全小写）。
+7. **`android/` 与 `ios/` 不入库**（见本目录 `.gitignore`）。原生工程每次由 `npx cap add android|ios` 重新生成，云端 CI 也是现生成再编译。代价是：**如果你手动改过 `AndroidManifest.xml` 之类的东西，它们不会被版本控制保留**——真要长期改原生配置，就把 `android/` 从 `.gitignore` 里拿掉并入库，同时把 CI 里的 `npx cap add android` 改成「目录不存在时才生成」。
+8. **云端构建踩过的两个坑**（已修，记录备查）：
+   - `android-actions/setup-android@v3` 的 `packages` 默认值是 `'tools platform-tools'`，但 Google 早把旧的 `tools` 包从 SDK 仓库下架了，`sdkmanager` 会报 `Failed to find package 'tools'` 并以退出码 1 失败。**必须显式覆盖** `packages`。
+   - JDK 必须是 21（见上）。
 
 ## 目录
 

@@ -32,6 +32,10 @@ san_guo_cards_data.json
 # —— 非站点文件：仓库只保留可在线游玩的静态站点 ——
 # （以下目录本机仍保留，只是不入库）
 mobile/
-_build/
 .fetch-wiki.js
 .github/
+
+# 注：_build/ 里的正文生成器要入库（reading-texts.js 由它们生成），
+#     只排除抓取缓存与构建日志（缓存可由 _build/*.py 重新抓取）
+_build/_cache_wl/
+_build/*.txt

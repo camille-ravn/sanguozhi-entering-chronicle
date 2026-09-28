@@ -28,3 +28,10 @@ backups/
 # —— 临时草稿 / 探针输出 ——
 caocao.html
 san_guo_cards_data.json
+
+# —— 非站点文件：仓库只保留可在线游玩的静态站点 ——
+# （以下目录本机仍保留，只是不入库）
+mobile/
+_build/
+.fetch-wiki.js
+.github/

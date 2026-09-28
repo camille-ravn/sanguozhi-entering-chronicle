@@ -2,7 +2,7 @@
 
 一个关于三国正史的单页互动原型。纯静态前端（HTML / CSS / 原生 JS），**无构建步骤**，双击 `index.html` 即可打开。
 
-## 四个板块
+## 五个板块
 
 | | 板块 | 做什么 |
 | --- | --- | --- |
@@ -10,6 +10,7 @@
 | 02 | 人物关系 | 核心人物关系图，可拖拽、缩放、按阵营筛选 |
 | 03 | 原典阅读 | 把《三国志》正文变成横版跳跃关卡——每个字是路，标点是障碍，读到哪里算到哪里 |
 | 04 | 入世冒险 | 捏一个 OC 放进真实历史时点，由「史官」续写；史实大势固定，局部命运向你开放 |
+| 05 | 食货志 | 经济自走棋：在钱与谷帛、铸币与通胀、编户与荫客之间取舍，敌方也像你一样招募、升星、布阵 |
 
 ## 快速开始
 
@@ -53,9 +54,9 @@ AI 旁白是**可选增强**。页面有三级通道，打开时自动选择：
 window.__WB_LOCAL_CONFIG__ = { publishableKey: "wbpk_..." };
 ```
 
-`cloud-config.js` 会自动探测并加载它；文件不存在就静默跳过。云端编译 APK 时读不到本机文件，改为从仓库 Secret `WB_PUBLIC_KEY` 注入（见 `mobile/README.md`）。
+`cloud-config.js` 会自动探测并加载它；文件不存在就静默跳过。
 
-> 补充：该云端服务除了认 key，还按**来源域名**校验。实测白名单包含服务自身域名与 `localhost` 系列（含 Capacitor 的 `https://localhost`），**GitHub Pages 这类外域会被 403 拒绝**。另外不带 `Origin` 头的裸请求不在拦截范围内，所以「key 留在前端」这件事本身只适合当作软性限制，别当硬防线。
+> 补充：该云端服务除了认 key，还按**来源域名**校验。实测白名单包含服务自身域名与 `localhost` 系列，**GitHub Pages 这类外域会被拒绝**。另外不带 `Origin` 头的裸请求不在拦截范围内，所以「key 留在前端」这件事本身只适合当作软性限制，别当硬防线。
 
 ### 3. 本地「史笔回退」
 
@@ -63,42 +64,27 @@ window.__WB_LOCAL_CONFIG__ = { publishableKey: "wbpk_..." };
 
 > 一句话：**别人 clone 下来开箱即玩（史笔版）；想要完整 AI，填自己的 key 即可。**
 
-## 手机 App（可选）
-
-想把完整 AI 带到手机，并且**不受浏览器跨域限制**，用 `mobile/` 里的 Capacitor 封装：
-
-```bash
-cd mobile
-npm install
-npm run android:add    # 首次：生成 android/ 原生工程
-npm run sync           # 同步网页资源到原生工程
-npm run android:open   # 打开 Android Studio，Run ▶
-```
-
-- 关键点：启用了 **`CapacitorHttp`**，页面里的 `fetch` 走**原生网络**——**第三方接口的 CORS 从此无关紧要**，这正是「自带 API 直连」在手机上能通的原因。
-- 代价：原生网络**整段缓冲**，不再逐字出现（文字一次性显示）；「停笔」可能不生效。代码已做兼容。
-- **不想在本机装工具链？** 仓库自带 GitHub Actions（`.github/workflows/android.yml`）：推到 GitHub 后，进 **Actions → Build Android APK → Run workflow**，云端会自动编译，跑完在该次运行的 **Artifacts** 里下载 `app-debug.apk`（手机开启「未知来源」即可装）。
-- **想让云端编出来的 APK 也带云端通道**：到仓库 **Settings → Secrets and variables → Actions** 建一个名为 `WB_PUBLIC_KEY` 的 Secret，值是那个 `wbpk_...`。构建时会自动写成 `cloud-config.local.js`。不配也能正常出包，只是 APK 里没有 key。
-- 本机构建需要 **JDK 21 + Node 22+ + Android Studio**；iOS 需 macOS + Xcode。细节与坑见 [`mobile/README.md`](./mobile/README.md)。
-
 ## 目录结构
 
 ```
-index.html          入口：四个板块 + 各弹窗
-styles.css          全部样式（新粗野主义）
-app.js              板块 01/02/04 逻辑 + AI 三级通道
-data.js             人物 / 关系 / 事件 / 卷目数据
-wiki-bios.js        人物资料卡数据
-reading.js          板块 03 横版跳跃引擎
-reading-texts.js    板块 03 正文（22 篇）
-cloud-config.js     云端通道配置（对外发布版，key 留空）
-cloud-config.local.js  本机私有覆盖，含真实 key（可选，已 gitignore）
+index.html              入口：五个板块 + 各弹窗
+styles.css              全部样式（新粗野主义）
+app.js                  板块 01/02/04 逻辑 + AI 三级通道
+data.js                 人物 / 关系 / 事件 / 卷目数据
+wiki-bios.js            人物资料卡数据
+reading.js              板块 03 横版跳跃引擎
+reading-texts.js        板块 03 正文（22 篇）
+data-05-shihuozhi.js    板块 05 数据层
+shihuozhi.js            板块 05 引擎
+cloud-config.js         云端通道配置（对外发布版，key 留空）
+cloud-config.local.js   本机私有覆盖，含真实 key（可选，已 gitignore）
 ```
 
 > **三级通道的优先级**：自带 API（`localStorage`）> 云端（有 key 才启用）> 史笔回退。
 > `cloud-config.js` 会异步探测 `cloud-config.local.js`，`app.js` 在握手前 await 这个探测，所以没有竞态。
 
 > 板块 03 的地形由种子随机生成，每次打开或点「换个排版」都是新布局；种子存 `localStorage` 键 `sgz.reading.seed`。
+> 板块 05 每局由种子决定；敌方每回合在你看不见的地方招募、升星、布阵，你只能看到它最终摆出的阵容。
 
 ## 原作与素材
 

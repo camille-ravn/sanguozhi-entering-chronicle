@@ -20,3 +20,11 @@ node_modules/
 Thumbs.db
 desktop.ini
 *.log
+
+# —— 本地模拟 / 平衡调试脚本与备份（不上传） ——
+scripts/
+backups/
+
+# —— 临时草稿 / 探针输出 ——
+caocao.html
+san_guo_cards_data.json

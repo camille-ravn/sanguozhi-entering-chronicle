@@ -30,6 +30,7 @@
     <button class="tab-button" data-tab="network" type="button"><b>02</b> 人物关系</button>
     <button class="tab-button" data-tab="reading" type="button"><b>03</b> 原典阅读</button>
     <button class="tab-button" data-tab="adventure" type="button"><b>04</b> 入世冒险</button>
+    <button class="tab-button" data-tab="shihuo" type="button"><b>05</b> 食货志</button>
   </nav>
 
   <main id="main">
@@ -354,6 +355,161 @@
         </section>
       </div>
     </section>
+    <section class="tab-panel" id="shihuoPanel" data-panel="shihuo" aria-labelledby="shihuoTitle" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ECONOMIC ROGUELIKE</p>
+          <h2 id="shihuoTitle">食货志</h2>
+          <p class="section-deck">《三国志》有纪传而无志。经济制度没有独立篇章，只散落在纪传正文与裴松之注的字缝里——你要做的，是把这些碎片拼成一部《食货志》。</p>
+        </div>
+        <div class="shihuo-head-actions">
+          <button class="brutal-button small" id="shBtnNew" type="button">重开一局</button>
+          <button class="brutal-button small" id="shBtnResume" type="button">读存档</button>
+        </div>
+      </div>
+
+      <div class="shihuo-setup brutal-card" id="shihuoSetup">
+        <div class="panel-title"><span>开</span><h3>择势开局</h3></div>
+        <p class="save-hint">三家起手差异「长」自史料处境，不是配平：魏屯田与编户厚、蜀靠虚值钱与锦、吴靠人力与海贸。</p>
+        <div class="sh-setup-row">
+          <label class="select-box">
+            <span>势力</span>
+            <select id="shFactionSel">
+              <option value="魏">曹魏 · 屯田起手强、编户基数大；铸币惩罚重</option>
+              <option value="蜀">蜀汉 · 铸币收益最高，通胀惩罚也最高</option>
+              <option value="吴">孙吴 · 山越人力、海贸位；大泉面额大但民间抵制</option>
+            </select>
+          </label>
+          <label class="select-box">
+            <span>局长度</span>
+            <select id="shDiffSel">
+              <option value="short">短局 · 190→220（30 回合）</option>
+              <option value="mid">中局 · 190→250</option>
+              <option value="long">长局 · 190→280</option>
+            </select>
+          </label>
+          <label class="select-box">
+            <span>种子（可选）</span>
+            <input id="shSeedInput" type="text" placeholder="留空则随机">
+          </label>
+        </div>
+        <button class="brutal-button ink wide" id="shStartBtn" type="button">开局</button>
+      </div>
+
+      <div class="shihuo-game" id="shihuoGame" hidden>
+        <div class="sh-top brutal-card">
+          <div class="sh-top-left">
+            <strong id="shYear">190 年</strong>
+            <span id="shFaction">曹魏</span>
+            <span id="shTurn"></span>
+            <span class="sh-ap" id="shAp"></span>
+          </div>
+          <div class="price-bar-wrap" title="物价指数 P：由天青转赤，≥800 则经济崩坏">
+            <div class="price-bar"><div id="shPriceFill"></div></div>
+            <span id="shPriceVal">P 100</span>
+          </div>
+        </div>
+
+        <div class="sh-res">
+          <div class="stat-card cream-card"><strong id="shMoney">0</strong><span>钱（文）</span></div>
+          <div class="stat-card green-card"><strong id="shGrain">0</strong><span>谷（斛）</span></div>
+          <div class="stat-card yellow-card"><strong id="shSilk">0</strong><span>帛（匹）</span></div>
+          <div class="stat-card blue-card"><strong id="shBianhu">0</strong><span>编户（万户）</span></div>
+          <div class="stat-card red-card"><strong id="shSoldiers">0</strong><span>兵（万）</span></div>
+          <div class="stat-card"><strong id="shYinke">0 / 0</strong><span>荫客占用 / 配额</span></div>
+          <div class="stat-card"><strong id="shPower">0</strong><span>国力 / 达标线</span></div>
+        </div>
+
+        <div class="sh-layout">
+          <section class="sh-left">
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>阵</span><h3>布阵 <small id="shBoardCount"></small></h3></div>
+              <div class="sh-board-side">左 9 格：敌军（每回合重置）　|　右 9 格：我军（可落子）</div>
+              <p class="sh-hint" id="shBoardHint">点仓库卡片再点右侧空格即可落子；前排承伤、后排输出。</p>
+              <div class="sh-board-grid" id="shGrid"></div>
+              <div class="sh-btn-row">
+                <button class="brutal-button small" id="shBtnAutoForm" type="button">按定位整队</button>
+              </div>
+            </div>
+
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>仓</span><h3>仓库 <small>招募后暂存此处，点卡片再点右侧空格落子</small></h3></div>
+              <div class="sh-bench" id="shBench"></div>
+            </div>
+
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>募</span><h3>人员招募 · 三选一</h3></div>
+              <div class="sh-shop" id="shShop"></div>
+              <button class="brutal-button small" id="shBtnRoll" type="button">刷新商店（1 行动点）</button>
+            </div>
+          </section>
+
+          <aside class="sh-right">
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>战</span><h3>战力对比</h3></div>
+              <div class="sh-cmp">
+                <div class="sh-cmp-row">
+                  <span>我军</span>
+                  <div class="sh-cmp-bar"><i id="shMyBar"></i></div>
+                  <b id="shMyPow">0</b>
+                </div>
+                <div class="sh-cmp-row">
+                  <span>敌军</span>
+                  <div class="sh-cmp-bar"><i id="shEnBar" class="enemy"></i></div>
+                  <b id="shEnPow">0</b>
+                </div>
+              </div>
+              <p class="sh-cmp-note" id="shCmpNote"></p>
+              <div class="sh-bond-title">我方羁绊</div>
+              <div class="sh-bond" id="shBondList"></div>
+            </div>
+
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>筹</span><h3>筹措</h3></div>
+              <div class="sh-btn-row">
+                <button class="brutal-button small" id="shBtnTuntian" type="button">屯田</button>
+                <button class="brutal-button small" id="shBtnTradeBuy" type="button">籴谷（钱→谷）</button>
+                <button class="brutal-button small" id="shBtnTradeSell" type="button">粜谷（谷→钱）</button>
+                <button class="brutal-button small" id="shBtnConscript" type="button">征兵</button>
+              </div>
+              <button class="brutal-button ink wide" id="shBtnEnd" type="button">结束本回合 →</button>
+            </div>
+
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>铸</span><h3>铸币权</h3></div>
+              <div class="sh-btn-row" id="shMintCards"></div>
+            </div>
+
+            <div class="sh-block brutal-card">
+              <div class="panel-title"><span>制</span><h3>制度</h3></div>
+              <div class="sh-btn-row" id="shSystemCards"></div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="sh-log-card brutal-card">
+          <div class="panel-title"><span>纪</span><h3>历年</h3></div>
+          <div class="sh-log" id="shLog"></div>
+        </div>
+
+        <div class="source-note brutal-card sh-guide">
+          <div>
+            <strong>玩法与出处</strong>
+            <ul class="sh-rules">
+              <li><b>回合</b>　一回合一岁，每回合 3 行动点。点「结束本回合」即过一年：先抽史事，再结算收支，后会战。</li>
+              <li><b>招贤布阵</b>　三选一花钱募人，暂存仓库（上限 9），点卡片再点右侧空格落子，摆在我方右 9 格。前排承伤（生 ×1.25、攻 ×0.85），后排输出（生 ×0.8、攻 ×1.2）；前排无人会被冲阵，全军 ×0.85。</li>
+              <li><b>升星</b>　两名同名同星者到手即自动合并，星级 +1，最高 3 星；攻与生按星级倍率放大。</li>
+              <li><b>羁绊</b>　同阵营 2/4/6/8/10 人逐级加成（最高 ×1.46）；同子羁绊 ≥2 人 ×1.08；亲属 ×1.10；举荐师徒 ×1.12。</li>
+              <li><b>会战</b>　我军战力（含阵位与羁绊）对比敌军，胜则得钱粮、连胜有赏，败则损兵耗谷。</li>
+              <li><b>看敌布阵</b>　敌军每回合重置在左 9 格（有名将、星级与前/中/后排，标「生」即生命），可针对其排布调整你方前排承伤、后排输出，争取会战占优。</li>
+              <li><b>钱会通胀</b>　铸币立刻得钱，却永久推高物价 P；招人、军费、后续铸币同步变贵，P≥800 则经济崩坏。谷帛不通胀，但会「湿谷薄绢」掉成色。</li>
+              <li><b>编户是真税基</b>　打士族卡换来的兵，代价是编户永久流失、荫客占用上升；荫客逾制会被查处，可反复施行「检括荫客」赎回。</li>
+              <li><b>出处</b>　罢五铢以谷帛为市（曹丕黄初二年，《晋书·食货志》「湿谷薄绢」）；董卓小钱「谷石数万」（《后汉书·董卓传》）；直百五铢（《刘巴传》注）；大泉当五百、当千（《吴主传》嘉禾五年、赤乌元年）；建安九年户调「亩四升，户绢二匹绵二斤」（《武帝纪》）；许下屯田（《晋书·食货志》）。荫客弧线「孙吴复客 → 曹魏租牛客户 → 西晋户调式」，见唐长孺《魏晋南北朝隋唐史三论》页 30–38。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -398,15 +554,30 @@
     </div>
   </dialog>
 
+  <dialog class="sh-over-dialog" id="shOverDialog">
+    <button class="dialog-close" id="shOverClose" type="button" aria-label="关闭">×</button>
+    <div class="sh-over-inner">
+      <p class="eyebrow">END OF THE CHRONICLE</p>
+      <h2 id="shOverTitle">国用不继</h2>
+      <p id="shOverText"></p>
+      <div class="sh-over-actions">
+        <button class="brutal-button ink" id="shOverAgain" type="button">再来一局</button>
+        <button class="brutal-button" id="shOverStay" type="button">留在这一局</button>
+      </div>
+    </div>
+  </dialog>
+
   <template id="toastTemplate"><div class="toast" role="status"></div></template>
   <div class="toast-region" id="toastRegion" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@0.1.2-dev.1b37f73.202609222026/lib/index.global.js"></script>
   <script src="./cloud-config.js"></script>
   <script src="./data.js"></script>
+  <script src="./data-05-shihuozhi.js"></script>
   <script src="./wiki-bios.js"></script>
   <script src="./reading-texts.js"></script>
   <script src="./app.js"></script>
   <script src="./reading.js"></script>
+  <script src="./shihuozhi.js"></script>
 </body>
 </html>

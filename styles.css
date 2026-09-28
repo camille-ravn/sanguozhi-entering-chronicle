@@ -100,7 +100,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   top: 0;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border-bottom: var(--border);
   background: var(--paper-2);
 }
@@ -594,4 +594,150 @@ progress::-moz-progress-bar { background: var(--blue); }
   .stats-stack, .volume-grid { grid-template-columns: 1fr; }
   .stat-card { min-height: 75px; }
   .tab-panel { padding-top: 22px; }
+}
+
+/* ───────────── 05 · 食货志（经济自走棋） ───────────── */
+.shihuo-head-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.shihuo-setup { padding: 22px; }
+.sh-setup-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px; margin: 14px 0;
+}
+.shihuo-game { display: grid; gap: 16px; }
+.sh-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 14px 18px; flex-wrap: wrap;
+}
+.sh-top-left { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.sh-top-left strong { font-size: 22px; }
+.sh-top-left span { font-size: 13px; color: var(--muted); }
+.sh-ap {
+  font-weight: 900; font-size: 13px; background: var(--yellow);
+  border: 2px solid var(--ink); padding: 2px 8px; color: var(--ink);
+}
+.price-bar-wrap { display: flex; align-items: center; gap: 10px; min-width: 240px; flex: 1; }
+.price-bar { flex: 1; height: 18px; border: var(--border); background: var(--paper-2); overflow: hidden; }
+.price-bar > div { height: 100%; width: 10%; background: var(--blue); transition: width .3s ease, background .3s ease; }
+#shPriceVal { font-weight: 900; min-width: 62px; font-size: 13px; }
+.sh-res { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 12px; }
+/* 资源卡复用了 .stat-card 的巨字，7 位数（150,803）会撑破窄卡 —— 改为竖排、收敛字号、允许换行 */
+.sh-res .stat-card {
+  flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: 4px; min-height: 84px; padding: 14px 16px; transform: none;
+}
+.sh-res .stat-card strong {
+  font-size: clamp(18px, 2.6vw, 30px); line-height: 1.05;
+  word-break: break-word; overflow-wrap: anywhere;
+}
+.sh-res .stat-card span {
+  max-width: none; text-align: left; white-space: normal;
+  font-size: 12px; font-weight: 700; line-height: 1.25; letter-spacing: 0;
+}
+/* 窄屏：5 个 tab 也别再被挤断 */
+@media (max-width: 520px) {
+  .tab-button { font-size: 11px; padding: 10px 4px; letter-spacing: 0; }
+  .tab-button b { font-size: 13px; }
+}
+.sh-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); gap: 16px; align-items: start; }
+.sh-left, .sh-right { display: grid; gap: 16px; min-width: 0; }
+.sh-block { padding: 14px 16px; display: grid; gap: 10px; }
+.sh-hint { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+.sh-hint.on { color: var(--ink); font-weight: 700; }
+/* 6×3 阵格：首列是排名标签 */
+.sh-board-grid { display: grid; grid-template-columns: 40px repeat(6, minmax(0, 1fr)); gap: 6px; }
+.sh-row-label {
+  display: grid; align-content: center; justify-items: center; gap: 1px;
+  border: 2px dashed var(--ink); background: var(--paper-2); padding: 2px;
+}
+.sh-row-label b { font-size: 12px; line-height: 1.1; }
+.sh-row-label span { font-size: 10px; color: var(--muted); }
+.sh-cell {
+  display: grid; align-content: start; justify-items: center; gap: 2px;
+  padding: 6px 3px; min-width: 0; min-height: 78px;
+  border: 2px solid var(--ink); background: var(--paper-2); box-shadow: var(--shadow-small);
+  font: inherit; text-align: center; cursor: pointer;
+}
+.sh-cell.filled { background: #efe6d2; }
+.sh-cell.empty { border-style: dashed; background: transparent; box-shadow: none; cursor: default; }
+.sh-cell.sel { background: var(--yellow); }
+.sh-cell.filled:hover { background: var(--blue); }
+.sh-cell b { font-size: 13px; line-height: 1.1; word-break: break-all; overflow-wrap: anywhere; }
+.sh-cell .sh-star { color: var(--red); font-size: 11px; line-height: 1; }
+.sh-cell .sh-atk { font-size: 12px; font-weight: 900; line-height: 1.2; }
+.sh-cell .sh-hp { display: block; width: 100%; height: 6px; border: 1px solid var(--ink); background: var(--paper); overflow: hidden; }
+.sh-cell .sh-hp i { display: block; height: 100%; background: var(--green); }
+.sh-cell .sh-plus { font-size: 15px; color: var(--muted); line-height: 1; }
+/* 战力对比 */
+.sh-cmp { display: grid; gap: 8px; }
+.sh-cmp-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 60px; align-items: center; gap: 8px; }
+.sh-cmp-row span { font-size: 12px; font-weight: 700; }
+.sh-cmp-row b { font-size: 13px; text-align: right; }
+.sh-cmp-bar { height: 14px; border: 2px solid var(--ink); background: var(--paper); overflow: hidden; }
+.sh-cmp-bar i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .3s ease; }
+.sh-cmp-bar i.enemy { background: var(--red); }
+.sh-cmp-note { margin: 0; font-size: 12px; font-weight: 900; }
+.sh-cmp-note.ok { color: #2f6b4f; }
+.sh-cmp-note.bad { color: var(--red); }
+.sh-bond { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-bond-chip {
+  font-size: 11px; font-weight: 700; line-height: 1.4; padding: 2px 7px;
+  border: 1px solid var(--ink); background: var(--paper-2); color: var(--muted);
+}
+.sh-bond-chip.on { background: var(--yellow); color: var(--ink); }
+/* 同一棋盘：左 9 格敌军（红、只读），右 9 格我军（蓝、可落子） */
+.sh-board-side { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+.sh-cell.enemy { background: #f3dede; cursor: default; box-shadow: none; }
+.sh-cell.enemy:hover { background: #f3dede; }
+.sh-cell.enemy.empty { background: #faf0f0; }
+.sh-cell.enemy.filled { background: #f3dede; }
+.sh-cell.enemy .sh-hp i { background: var(--red); }
+.sh-cell.me.empty { background: #e7eef7; }
+.sh-cell.placeable { outline: 3px solid var(--yellow); outline-offset: -3px; background: var(--blue); }
+/* 仓库 */
+.sh-bench { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sh-bench-empty { font-size: 11px; color: var(--muted); padding: 6px 2px; }
+.sh-card.sel { background: var(--yellow); }
+.sh-card.sel:hover { background: var(--yellow); }
+.sh-bond-title { font-size: 12px; font-weight: 900; margin-top: 2px; }
+.sh-shop { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sh-card {
+  display: grid; gap: 2px; padding: 10px 8px; text-align: left; font: inherit;
+  border: 2px solid var(--ink); background: var(--paper-2); box-shadow: var(--shadow-small); cursor: pointer;
+}
+.sh-card:hover { background: var(--blue); }
+.sh-card b { font-size: 14px; word-break: break-word; overflow-wrap: anywhere; }
+.sh-card span { font-size: 11px; color: var(--muted); word-break: break-word; overflow-wrap: anywhere; }
+.sh-card em { font-size: 12px; font-style: normal; font-weight: 900; word-break: break-word; overflow-wrap: anywhere; }
+.sh-card-fac { font-size: 11px; color: var(--muted); word-break: break-word; overflow-wrap: anywhere; }
+.sh-card-arch { font-size: 12px; font-weight: 900; word-break: break-word; overflow-wrap: anywhere; }
+.sh-card-bond { font-size: 10px; color: var(--muted); word-break: break-word; overflow-wrap: anywhere; }
+.sh-card.empty { display: grid; place-items: center; color: var(--muted); font-size: 12px; background: transparent; box-shadow: none; border-style: dashed; }
+.sh-main { display: grid; gap: 16px; }
+.sh-actions { padding: 16px; display: grid; gap: 10px; }
+.sh-btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.sh-log-card { padding: 16px; }
+.sh-log { display: grid; gap: 6px; max-height: 320px; overflow-y: auto; }
+.sh-log-line { margin: 0; font-size: 13px; line-height: 1.6; }
+.sh-log-line b {
+  background: var(--yellow); padding: 0 6px; margin-right: 6px;
+  border: 1px solid var(--ink); font-size: 12px;
+}
+/* 底部玩法说明：※ 为项目符号（★ 留给武将星级） */
+.sh-guide ul.sh-rules { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.sh-guide li { position: relative; padding-left: 22px; font-size: 13px; line-height: 1.7; color: #333; }
+.sh-guide li::before { content: "※"; position: absolute; left: 0; top: 0; color: var(--red); font-weight: 900; }
+.sh-guide li b { margin-right: 2px; }
+.brutal-button:disabled, .brutal-button.disabled { opacity: .45; cursor: not-allowed; }
+.sh-over-dialog { border: var(--border); background: var(--paper-2); padding: 26px; max-width: 520px; box-shadow: var(--shadow); }
+.sh-over-inner { display: grid; gap: 12px; }
+.sh-over-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 980px) {
+  .sh-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .sh-board-grid { grid-template-columns: 30px repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .sh-cell { min-height: 66px; padding: 4px 2px; }
+  .sh-cell b { font-size: 11px; }
+  .sh-cell .sh-atk { font-size: 11px; }
+  .sh-shop { grid-template-columns: 1fr; }
 }
